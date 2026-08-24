@@ -1,0 +1,819 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DigitalOman.ai</title>
+<link rel="icon" href="images/mark.png">
+<link rel="stylesheet" href="fonts/fonts-inline.css">
+<style>
+:root{
+  --ink:#241547;          /* deep indigo, the reference's body colour */
+  --ink-soft:#6b5b95;
+  --pur:#7c3aed;          /* accent */
+  --pur-lt:#a78bfa;
+  --lav:#c9b8f0;
+  --peach:#f7cfae;
+  --paper:#fdfcff;
+  --cy:#00BCD4;           /* the product's own accent, kept for UI chrome */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--paper);scroll-behavior:auto}
+body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);
+     -webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{display:block;max-width:100%}
+
+/* ── pinned section scaffold ──────────────────────────────────────────
+   Each <section> is tall; the .stage inside it sticks for the whole
+   height, so scrolling through the section scrubs an animation in place. */
+.sec{position:relative;width:100%}
+.stage{position:fixed;inset:0;height:100vh;width:100%;overflow:hidden;
+       display:flex;align-items:center;justify-content:center;
+       opacity:0;pointer-events:none;will-change:opacity}
+.layer{position:absolute;inset:0;overflow:hidden}
+.mid{position:relative;width:100%;height:100%}
+
+/* ── atmosphere ───────────────────────────────────────────────────────*/
+.blob{position:absolute;border-radius:50%;filter:blur(90px);will-change:transform,opacity}
+.fog{position:absolute;left:-10%;right:-10%;bottom:-16%;height:52%;
+     filter:blur(64px);will-change:transform,opacity;
+     background:radial-gradient(ellipse 40% 100% at 18% 100%,#b9a3e8 0%,transparent 70%),
+                radial-gradient(ellipse 44% 100% at 48% 100%,#c9b8f0 0%,transparent 72%),
+                radial-gradient(ellipse 40% 100% at 82% 100%,#bda9ea 0%,transparent 70%)}
+.paperbg{position:absolute;inset:0;background:var(--paper)}
+.plate{position:absolute;inset:-8%;background-size:cover;background-position:center;
+       will-change:transform,opacity}
+.tint{position:absolute;inset:0;pointer-events:none}
+
+/* ── type ─────────────────────────────────────────────────────────────*/
+.line{position:absolute;left:50%;top:50%;width:0;height:0;white-space:nowrap}
+.w{position:absolute;left:0;top:0;transform-origin:0 50%;
+   will-change:transform,opacity,filter;white-space:pre}
+.t-lead{font-size:clamp(20px,2.0vw,34px);font-weight:400;color:var(--ink-soft)}
+.t-hero{font-size:clamp(34px,5.4vw,88px);font-weight:600;letter-spacing:-.03em}
+.t-big{font-size:clamp(40px,7.2vw,124px);font-weight:700;letter-spacing:-.04em}
+.pur{color:var(--pur)}
+.mono{font-family:"JetBrains Mono",monospace}
+
+.center{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center}
+.kick{font-size:clamp(11px,1.05vw,17px);font-weight:600;letter-spacing:.32em;
+      text-transform:uppercase;color:var(--pur)}
+
+/* ── floating things ──────────────────────────────────────────────────*/
+.orb{position:absolute;border-radius:50%;will-change:transform,opacity;
+     box-shadow:inset -8px -10px 22px rgba(255,255,255,.55),0 18px 40px rgba(90,60,160,.18)}
+.ico{position:absolute;color:var(--pur);will-change:transform,opacity}
+.card{position:absolute;border-radius:14px;background:#fff;overflow:hidden;
+      border:1px solid rgba(120,90,200,.14);
+      box-shadow:0 22px 60px rgba(70,40,130,.16);will-change:transform,opacity}
+.card img{width:100%;height:100%;object-fit:cover;object-position:top left}
+.chipf{position:absolute;background:#fff;border-radius:999px;
+       padding:clamp(6px,.62vw,9px) clamp(11px,1.25vw,18px);
+       font-size:clamp(10px,1.05vw,15px);font-weight:500;color:var(--ink);white-space:nowrap;
+       border:1px solid rgba(120,90,200,.16);
+       box-shadow:0 14px 34px rgba(70,40,130,.14);will-change:transform,opacity}
+
+/* ── the framed product window ────────────────────────────────────────*/
+.win{position:absolute;border-radius:16px;overflow:hidden;background:#fff;
+     border:1px solid rgba(120,90,200,.16);
+     box-shadow:0 50px 120px rgba(60,35,120,.26);will-change:transform,opacity}
+.win img{width:100%;height:100%;object-fit:cover;object-position:top left}
+
+/* ── the live chat replica (section 8) ────────────────────────────────*/
+.app{position:absolute;transform-origin:50% 50%;
+     background:#fff;border-radius:18px;overflow:hidden;
+     border:1px solid rgba(120,90,200,.16);
+     box-shadow:0 60px 140px rgba(60,35,120,.28);display:flex;will-change:transform,opacity}
+.app .rail{width:23%;border-right:1px solid #ececf2;padding:18px 14px;background:#fbfaff}
+.app .rail .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.app .rail .brand i{width:9px;height:9px;border-radius:3px;background:var(--cy);display:block}
+.app .rail .nb{margin-top:14px;background:var(--cy);color:#04262b;font-weight:600;
+   font-size:13px;border-radius:9px;padding:9px 12px;text-align:center}
+.app .rail .grp{margin-top:18px;font-size:10px;letter-spacing:.16em;color:#9a94ad;font-weight:600}
+.app .rail .it{margin-top:10px;font-size:12.5px;color:#5d5772}
+.app .body{flex:1;display:flex;flex-direction:column;padding:22px 26px}
+.app .top{font-size:15px;font-weight:600;color:#6b6580;border-bottom:1px solid #f0eff5;
+   padding-bottom:12px;margin-bottom:auto}
+.app .q{align-self:flex-end;max-width:70%;background:var(--cy);color:#04262b;
+   border-radius:16px 16px 5px 16px;padding:14px 18px;font-size:17px;line-height:1.45}
+.app .atag{display:flex;align-items:center;gap:7px;margin-top:22px;font-size:13.5px;
+   font-weight:600;color:var(--cy)}
+.app .a{margin-top:10px;font-size:17px;line-height:1.62;color:#2c2740;max-width:80%}
+.app .composer{margin-top:20px;border:1px solid #e6e4ee;border-radius:14px;
+   padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+   font-size:16px;color:#a49ebb}
+.app .send{width:32px;height:32px;border-radius:50%;background:var(--cy);flex:none}
+.cur{display:inline-block;width:2px;height:1em;background:var(--pur);
+     vertical-align:-2px;margin-left:1px}
+
+/* ── chrome ───────────────────────────────────────────────────────────*/
+#mark{position:fixed;left:26px;top:22px;z-index:90;display:flex;align-items:center;gap:9px;
+  font-size:14px;font-weight:700;letter-spacing:-.01em;color:var(--ink);
+  opacity:.62;mix-blend-mode:multiply;pointer-events:none}
+#mark img{width:22px;height:22px}
+#prog{position:fixed;left:0;top:0;height:2px;background:var(--pur);z-index:95;width:0;
+  will-change:width}
+#end{position:relative;height:1px}
+.stack{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:clamp(16px,2.6vh,34px);
+  padding:0 6vw;text-align:center}
+.lock{display:flex;align-items:center;justify-content:center;gap:1.6vw;
+  will-change:transform,opacity}
+.lock img{width:clamp(40px,5.2vw,86px);height:clamp(40px,5.2vw,86px);flex:none;
+  filter:saturate(1.9) brightness(.52) contrast(1.15)}
+.lock .wm{font-size:clamp(30px,5.6vw,92px);font-weight:700;letter-spacing:-.045em;color:#2f1b63}
+.btn{display:inline-block;pointer-events:auto;text-decoration:none;
+  background:var(--pur);color:#fff;font-weight:600;
+  font-size:clamp(15px,1.55vw,24px);padding:clamp(13px,1.3vw,20px) clamp(28px,3vw,52px);
+  border-radius:999px;box-shadow:0 16px 40px rgba(124,58,237,.34);
+  will-change:transform,opacity;transition:transform .18s ease,box-shadow .18s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 22px 52px rgba(124,58,237,.42)}
+.blink{display:inline-flex;align-items:center;gap:.5em;pointer-events:auto;
+  text-decoration:none;color:var(--pur);font-weight:600;
+  font-size:clamp(13px,1.35vw,21px);border-bottom:1px solid rgba(124,58,237,.32);
+  padding-bottom:2px;will-change:opacity}
+.blink:hover{border-bottom-color:var(--pur)}
+.cue{display:flex;flex-direction:column;align-items:center;gap:10px;
+  font-size:11px;letter-spacing:.30em;text-transform:uppercase;color:var(--ink-soft);
+  will-change:opacity}
+.cue svg{animation:bob 1.9s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(7px);opacity:1}}
+@media (prefers-reduced-motion:reduce){.cue svg{animation:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+
+<div id="mark"><img src="images/mark.png" alt="" style="filter:saturate(1.9) brightness(.5)"><span>DigitalOman<span style="color:var(--cy)">.ai</span></span></div>
+<div id="prog"></div>
+<main id="film"></main>
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   Scroll-scrubbed film. Every section pins for its own height and its
+   draw(p) is a pure function of that section's progress, so the motion is
+   wherever the reader's scroll is — forwards, backwards, or flung.
+   ══════════════════════════════════════════════════════════════════════ */
+const film=document.getElementById('film');
+const clamp=(v,a=0,b=1)=>v<a?a:v>b?b:v;
+const lerp=(a,b,u)=>a+(b-a)*u;
+const P=(t,s,d)=>clamp((t-s)/d);
+const eo3=u=>1-Math.pow(1-u,3);
+const eo5=u=>1-Math.pow(1-u,5);
+const eio=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;
+const eob=u=>{const c=1.7,c3=c+1;return 1+c3*Math.pow(u-1,3)+c*Math.pow(u-1,2)};
+const arc=(t,s,d)=>Math.sin(clamp((t-s)/d)*Math.PI);
+const rng=s=>{let x=s>>>0;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}};
+function E(tag,cls,parent,html){const e=document.createElement(tag);
+  if(cls)e.className=cls; if(html!=null)e.innerHTML=html; if(parent)parent.appendChild(e); return e;}
+function px(e,o){for(const k in o)e.style[k]=o[k];}
+const VW=()=>window.innerWidth, VH=()=>window.innerHeight;
+const NARROW=()=>window.innerWidth<780;
+
+const SEC=[], LINES=[], REMEASURE=[];
+function sec(vh){
+  const el=E('section','sec',film); el.style.height=vh+'vh';
+  const stage=E('div','stage',el);
+  stage.style.zIndex=String(SEC.length+1);
+  const o={el,stage,vh,draw:()=>{}}; SEC.push(o); return o;
+}
+
+/* ── the reference's signature move: words arrive one at a time and the
+      whole line re-centres around them. Words are absolutely placed from
+      measured widths, so the line can breathe instead of jumping. ── */
+function line(parent,text,cls){
+  const host=E('div','line',parent), spans=[], list=text.split(' ');
+  let em=false;
+  list.forEach((w,i)=>{
+    let t=w, opened=false, closed=false;
+    if(t[0]==='*'){ opened=true; t=t.slice(1); }
+    const m=/^(.*?)\*([.,!?:;]*)$/.exec(t);
+    if(m){ closed=true; t=m[1]+m[2]; }
+    const on = em || opened;
+    const s=E('span','w '+(cls||''),host);
+    if(on) s.classList.add('pur');
+    s.textContent = t + (i<list.length-1?' ':'');
+    spans.push(s);
+    em = on && !closed;
+  });
+  const o={host,spans,w:[]}; LINES.push(o); return o;
+}
+/* A span inside a display:none stage measures as zero, and zero widths put
+   every word of a line at the same x — the words pile up on one another.
+   Only the very first measuring pass happens with all stages still shown, so
+   any later one (every resize) has to reveal them for the pass, and each line
+   re-measures itself lazily the first time it is drawn at a new width. */
+function measureLine(o){
+  o.w.length=0;
+  for(const s of o.spans){
+    s.style.opacity='0'; s.style.transform='none'; s.style.filter='none';
+    o.w.push(s.getBoundingClientRect().width);
+  }
+  o.lh = o.spans.length ? o.spans[0].getBoundingClientRect().height*1.04 : 40;
+  o.key = VW();
+}
+function measureAll(){
+  const prev=SEC.map(s=>s.stage.style.display);
+  for(const s of SEC) s.stage.style.display='';   // nothing paints in between
+  for(const fn of REMEASURE) fn();
+  for(const o of LINES) measureLine(o);
+  SEC.forEach((s,i)=>{ s.stage.style.display=prev[i]; });
+  layoutW=VW(); layoutH=VH();
+}
+/* show(): per-word presence drives BOTH the reveal and the width it claims,
+   which is what makes the line slide sideways as it grows. */
+function show(o,t,start,step,dur,opt){
+  opt=opt||{};
+  const dy=opt.dy==null?26:opt.dy, out=opt.out, outDur=opt.outDur||.14;
+  if(o.key!==VW() || !(o.lh>0)) measureLine(o);   // drawn ⇒ visible ⇒ measurable
+  const maxW=VW()*(NARROW()?.90:.86);
+  let widest=0; for(const w of o.w) widest=Math.max(widest,w);
+  if(widest<=0) return;                            // nothing measurable yet
+  const fit=Math.min(1,maxW/Math.max(1,widest));   // only shrink if one word can't fit
+  const rows=[]; let row=[], roww=0;
+  for(let i=0;i<o.w.length;i++){
+    const ww=o.w[i]*fit;
+    if(row.length && roww+ww>maxW){ rows.push(row); row=[]; roww=0; }
+    row.push(i); roww+=ww;
+  }
+  if(row.length) rows.push(row);
+  const lh=(o.lh||40)*fit, y0=-(rows.length-1)*lh/2;
+  const gone=out==null?0:eo3(P(t,out,outDur));
+  rows.forEach((idx,ri)=>{
+    let total=0; const cw=[];
+    for(const i of idx){
+      const c=o.w[i]*fit*eio(P(t,start+i*step-dur*.34,dur*.52));
+      cw.push(c); total+=c;
+    }
+    let x=-total/2;
+    idx.forEach((i,k)=>{
+      const u=eo5(P(t,start+i*step,dur)), s=o.spans[i];
+      const op=u*(1-gone);
+      s.style.opacity=op.toFixed(3);
+      if(op<=.002){ s.style.transform='translate(-9999px,0)'; x+=cw[k]; return; }
+      const bl=(1-u)*7+gone*9;
+      s.style.transform=`translate(${x.toFixed(1)}px,-50%) translateY(${(y0+ri*lh+(1-u)*dy-gone*22).toFixed(1)}px) scale(${(fit*lerp(.94,1,u)).toFixed(4)})`;
+      s.style.filter=bl<.06?'none':`blur(${bl.toFixed(2)}px)`;
+      x+=cw[k];
+    });
+  });
+}
+const D={
+ doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
+ bill:'<path d="M5 2v20l2-1.5L9 22l2-1.5L13 22l2-1.5L17 22l2-1.5V2l-2 1.5L15 2l-2 1.5L11 2 9 3.5 7 2z"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+ mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2.5 7.5 9.5 6 9.5-6"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3.5-3.9"/>',
+ chat:'<path d="M21 14a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+ img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="m21 15-5-5L4.5 21"/>',
+ globe:'<circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/><path d="M12 2.5a14 14 0 0 1 0 19 14 14 0 0 1 0-19"/>',
+ db:'<ellipse cx="12" cy="5" rx="8.5" ry="3"/><path d="M3.5 5v14c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3V5"/><path d="M3.5 12c0 1.7 3.8 3 8.5 3s8.5-1.3 8.5-3"/>',
+ note:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/>',
+ todo:'<path d="M10 6h11M10 12h11M10 18h11"/><path d="m3 6 1.4 1.4L7.2 4.6M3 12l1.4 1.4L7.2 10.6M3 18l1.4 1.4L7.2 16.6"/>',
+ mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10.5a7 7 0 0 0 14 0M12 17.5V22"/>',
+ cap:'<path d="m2 8.5 10-5 10 5-10 5z"/><path d="M6.5 11v5c0 1.7 2.5 3 5.5 3s5.5-1.3 5.5-3v-5"/>',
+ srch:'<circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.2-4.2"/>',
+ lock:'<rect x="4" y="10" width="16" height="11" rx="2.2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+ term:'<rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="m7 10 3 2.5-3 2.5M13 15.5h4"/>',
+ wifi:'<path d="M2 8.5a16 16 0 0 1 20 0M5.5 12.5a11 11 0 0 1 13 0M9 16.5a6 6 0 0 1 6 0"/><circle cx="12" cy="20" r="1.1" fill="currentColor"/>',
+};
+const ico=(n,s,w)=>`<svg width="${s||26}" height="${s||26}" viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="${w||1.6}" stroke-linecap="round" stroke-linejoin="round">${D[n]}</svg>`;
+const IMG=(n,e)=>'images/'+n+'.'+(e||'png'), LIT=n=>'light/'+n+'.webp';
+
+/* ═══ S0 · title card — the brand holds, then blurs into the film ════ */
+{
+ const s=sec(170), st=s.stage;
+ const bg=E('div','layer',st);
+ px(bg,{background:'linear-gradient(165deg,#f8f5fe 0%,#eee5fb 44%,#fbe6d8 100%)'});
+ const glow=E('div','blob',st);
+ px(glow,{background:'#c9b8f0',left:'26%',top:'18%',width:'48vw',height:'48vw',opacity:'.5'});
+ const stack=E('div','stack',st);
+ const lock=E('div','lock',stack);
+ const lg=E('img','',lock); lg.src=IMG('mark');
+ E('div','wm',lock,'DigitalOman<span class="pur">.ai</span>');
+ const tag=E('div','',stack,'An AI that never leaves your machine');
+ px(tag,{fontSize:'clamp(15px,2.0vw,32px)',fontWeight:'500',color:'#5b4694'});
+ const cue=E('div','cue',st,
+   '<span>Scroll</span><svg width="20" height="26" viewBox="0 0 20 26" fill="none" '
+   +'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+   +'<path d="M10 3v18M3.5 14.5 10 21l6.5-6.5"/></svg>');
+ px(cue,{position:'absolute',left:'0',right:'0',bottom:'8vh',alignItems:'center'});
+ s.draw=p=>{
+   /* one move: the lockup swells very slightly and blurs out of focus,
+      handing the frame to the product */
+   const go=eio(P(p,.10,.78));
+   px(stack,{opacity:(1-eo3(P(p,.16,.62))).toFixed(3),
+     transform:`scale(${lerp(1,1.14,go).toFixed(4)})`,
+     filter:go>.004?`blur(${(go*18).toFixed(2)}px)`:'none'});
+   cue.style.opacity=(1-eo3(P(p,0,.22))).toFixed(3);
+   glow.style.opacity=(.5*(1-eo3(P(p,.2,.6)))).toFixed(3);
+   px(bg,{transform:`scale(${lerp(1,1.06,go).toFixed(4)})`});
+ };
+}
+
+/* ═══ S1 · hero: the camera pulls back off the product ═══════════════ */
+{
+ const s=sec(245), st=s.stage;
+ const bg=E('div','layer',st);
+ px(bg,{background:'linear-gradient(160deg,#efe6fb 0%,#e4d8f7 38%,#f6ded0 78%,#fdf3ea 100%)'});
+ const B=[['#c9b8f0',-8,-14,58,58],['#f7cfae',62,58,52,52],['#d9c8f5',66,-12,44,44],
+          ['#f3c9d8',-6,62,46,46]];
+ const blobs=B.map(b=>{const d=E('div','blob',bg);
+   px(d,{background:b[0],left:b[1]+'%',top:b[2]+'%',width:b[3]+'vw',height:b[4]+'vw',opacity:'.75'});
+   return d;});
+ const wm=E('div','',st,'DigitalOman<span class="pur">.ai</span>');
+ px(wm,{position:'absolute',left:'0',right:'0',top:'21%',textAlign:'center',
+        fontSize:'clamp(46px,10.5vw,178px)',fontWeight:'700',letterSpacing:'-.05em',
+        color:'#4c2fa0',willChange:'transform,opacity'});
+ const win=E('div','win',st);
+ E('img','',win).src=LIT('home');
+ const R=rng(11), FLOAT=[];
+ const CHIPS=['Chat','Documents','Vision','Web search','Mail','ERP','Notes','Transcribe'];
+ CHIPS.forEach((c,i)=>{
+   const d=E('div','chipf',st,c);
+   FLOAT.push({d,a0:i/CHIPS.length*Math.PI*2+.3,r:.56+R()*.15,sp:.9+R()*.5,
+               sc:.86+R()*.3,dl:i*.035,ry:.74,mo:1});
+ });
+ for(let i=0;i<7;i++){
+   const sz=44+R()*86, hue=R()>.5?'#cbb4f2':'#f6cdae';
+   const d=E('div','orb',st);
+   px(d,{width:sz+'px',height:sz+'px',
+     background:`radial-gradient(circle at 34% 28%,#fff,${hue} 62%,${hue})`});
+   FLOAT.push({d,a0:R()*Math.PI*2,r:.50+R()*.26,sp:.7+R()*.8,sc:1,dl:.12+R()*.3,ry:.80,mo:.55});
+ }
+ s.draw=p=>{
+   const pull=eio(P(p,0,.60));
+   const away=eio(P(p,.80,.20));
+   const w=VW(), h=VH();
+   const nb=NARROW(), ww=Math.min(w*(nb?.90:.62),1180), wh=ww*.6267;
+   px(win,{left:((w-ww)/2)+'px',top:((h-wh)/2+h*.055)+'px',width:ww+'px',height:wh+'px',
+     transform:`translateY(${(lerp(h*.06,0,pull)-away*h*.30).toFixed(1)}px) scale(${(lerp(1.30,1,pull)*(1+away*1.5)).toFixed(3)}) rotate(${(lerp(-2.4,0,pull)).toFixed(2)}deg)`,
+     opacity:(1-eo3(P(p,.985,.05))).toFixed(3),
+     filter:away>.02?`blur(${(away*22).toFixed(1)}px)`:'none'});
+   px(wm,{opacity:(eo3(P(p,.12,.30))*(1-eo3(P(p,.80,.16)))).toFixed(3),
+     transform:`translateY(${(lerp(52,0,eo5(P(p,.12,.42)))-away*130).toFixed(1)}px) scale(${(1+away*.5).toFixed(3)})`});
+   blobs.forEach((d,i)=>{
+     d.style.transform=`translate(${(Math.sin(p*3.1+i)*3.2).toFixed(2)}vw,${(Math.cos(p*2.6+i)*3.0).toFixed(2)}vw) scale(${(1+away*1.2).toFixed(3)})`;
+   });
+   FLOAT.forEach((f,i)=>{
+     const u=eob(P(p,.16+f.dl,.44)), a=f.a0+p*f.sp*1.5;
+     const rr=f.r*Math.min(w,h*1.7)*lerp(.55,1,u)*(nb?.70:1);
+     const x=w/2+Math.cos(a)*rr*(nb?1.02:1.30), y=h/2+Math.sin(a)*rr*f.ry*(nb?1.9:1);
+     const op=eo3(P(p,.16+f.dl,.30))*(1-eo3(P(p,.80,.15)));
+     px(f.d,{left:'0',top:'0',opacity:op.toFixed(3),
+       transform:`translate(${(x-w/2).toFixed(1)}px,${(y-h/2).toFixed(1)}px) translate(-50%,-50%) translate(${w/2}px,${h/2}px) scale(${((f.sc||1)*(nb?f.mo:1)*lerp(.5,1,u)*(1+away*1.9)).toFixed(3)})`});
+   });
+ };
+}
+
+/* ═══ S2 · what leaves ══════════════════════════════════════════════ */
+{
+ const s=sec(230), st=s.stage;
+ E('div','paperbg',st); const fog=E('div','fog',st);
+ const a=line(st,'Every day, your work leaves *your machine*.','t-hero');
+ const b=line(st,'Your contracts. Your invoices. Your clients.','t-hero');
+ s.draw=p=>{
+   show(a,p,.05,.045,.20,{out:.44,outDur:.10});
+   show(b,p,.58,.050,.20,{out:.985,outDur:.05});
+   px(fog,{opacity:(.55+arc(p,0,1)*.45).toFixed(3),
+     transform:`translateY(${(lerp(16,-8,p)).toFixed(1)}vh) scale(${lerp(1,1.14,p).toFixed(3)})`});
+ };
+}
+
+/* ═══ S3 · it all goes somewhere ════════════════════════════════════ */
+{
+ const s=sec(190), st=s.stage;
+ E('div','paperbg',st); const fog=E('div','fog',st);
+ const a=line(st,'It all goes *somewhere*.','t-hero');
+ const R=rng(23), KEYS=['doc','bill','mail','users','img','globe','db','note','todo','mic','cap','lock','srch','chat'];
+ const items=KEYS.map((k,i)=>{
+   const d=E('div','ico',st,ico(k,R()>.6?30:23,1.55));
+   return {d,x:.5+(R()-.5)*.86,y:.5+(R()-.5)*.52,dl:i*.028,
+           dx:(R()-.5)*.10,dy:(R()-.5)*.09,sp:.6+R()};
+ });
+ s.draw=p=>{
+   show(a,p,.16,.06,.22,{out:.985,outDur:.05});
+   const w=VW(),h=VH();
+   items.forEach((it,i)=>{
+     const u=eob(P(p,.10+it.dl,.34)), o=eo3(P(p,.10+it.dl,.26))*(1-eo3(P(p,.985,.05)));
+     const fx=it.x*w+Math.sin(p*4.2*it.sp+i)*it.dx*w;
+     const fy=it.y*h+Math.cos(p*3.4*it.sp+i*1.7)*it.dy*h - p*h*.10;
+     px(it.d,{left:'0',top:'0',opacity:(o*.8).toFixed(3),
+       transform:`translate(${fx.toFixed(1)}px,${fy.toFixed(1)}px) translate(-50%,-50%) scale(${lerp(.4,1,u).toFixed(3)})`});
+   });
+   px(fog,{opacity:'.85',transform:`translateY(${lerp(10,-6,p).toFixed(1)}vh)`});
+ };
+}
+
+/* ═══ S4 · the bill, with the collage orbiting it ═══════════════════ */
+{
+ const s=sec(230), st=s.stage;
+ const bg=E('div','layer',st);
+ px(bg,{background:'linear-gradient(150deg,#f3ecfd 0%,#eadff9 42%,#f9e3d4 100%)'});
+ /* the three elements are anchored on their own centres, so the block
+    reads as one centred stack at any viewport */
+ const headBox=E('div','',st);
+ px(headBox,{position:'absolute',left:'0',right:'0',top:'37%',height:'0'});
+ const a=line(headBox,'And every month, the bill arrives.','t-hero');
+ const num=E('div','',st,'');
+ px(num,{position:'absolute',left:'0',right:'0',top:'54%',textAlign:'center',
+   fontSize:'clamp(46px,9vw,150px)',fontWeight:'700',letterSpacing:'-.045em',
+   color:'#7c3aed',fontVariantNumeric:'tabular-nums',willChange:'transform,opacity'});
+ const cap=E('div','kick',st,'per seat · per month · billed by the token');
+ px(cap,{position:'absolute',left:'0',right:'0',top:'67%',textAlign:'center',willChange:'opacity'});
+ const SH=['home','search','erp','notes','academy','todo','transcribe','chat'];
+ const R=rng(31);
+ const cards=[];
+ for(let i=0;i<14;i++){
+   const d=E('div','card',st);
+   E('img','',d).src=LIT(SH[i%SH.length]);
+   cards.push({d,a0:i/14*Math.PI*2,r:.46+R()*.20,sc:.72+R()*.5,
+               dl:i*.022,rot:(R()-.5)*18,sp:.55+R()*.5});
+ }
+ s.draw=p=>{
+   show(a,p,.06,.045,.20,{out:.985,outDur:.05});
+   const w=VW(),h=VH(), u=eio(P(p,.28,.42));
+   /* metered per token, so the monthly figure accelerates rather than
+      creeping — 29 to 2,999+ over the beat */
+   const val=Math.round(29+(2999-29)*Math.pow(u,2.1));
+   num.innerHTML=u>0?('$'+val.toLocaleString('en-US')+(u>=1?'<span style="opacity:.55">+</span>':'')):'';
+   px(num,{opacity:eo3(P(p,.28,.16))*(1-eo3(P(p,.985,.05))),
+     transform:`translateY(-50%) scale(${lerp(.9,1,eob(P(p,.28,.30))).toFixed(3)})`});
+   px(cap,{opacity:(eo3(P(p,.46,.18))*(1-eo3(P(p,.985,.05)))*.92).toFixed(3),
+     transform:'translateY(-50%)'});
+   const base=Math.min(w,h*1.6), nb=NARROW();
+   cards.forEach((c,i)=>{
+     const iu=eob(P(p,.05+c.dl,.40)), o=eo3(P(p,.05+c.dl,.30))*(1-eo3(P(p,.985,.05)));
+     const ang=c.a0+p*c.sp*1.1;
+     const rr=c.r*base*lerp(1.5,1,iu)*(nb?1.05:1);
+     const cw=base*(nb?.26:.19)*c.sc, ch=cw*.627;
+     px(c.d,{width:cw+'px',height:ch+'px',left:'0',top:'0',opacity:(o*.96).toFixed(3),
+       transform:`translate(${(w/2+Math.cos(ang)*rr*(nb?1.15:1.28)).toFixed(1)}px,${(h/2+Math.sin(ang)*rr*(nb?2.1:.80)).toFixed(1)}px) translate(-50%,-50%) rotate(${(c.rot+Math.sin(p*2+i)*3).toFixed(2)}deg) scale(${lerp(.6,1,iu).toFixed(3)})`});
+   });
+ };
+}
+
+/* ═══ S5 · the tracking-out beat ════════════════════════════════════ */
+{
+ const s=sec(150), st=s.stage;
+ const bg=E('div','layer',st);
+ px(bg,{background:'linear-gradient(180deg,#f7f4fd 0%,#efe7fa 46%,#f8ddcd 100%)'});
+ const grid=E('div','layer',st);
+ const gl=[];
+ for(let i=0;i<9;i++){
+   const d=E('div','',grid);
+   px(d,{position:'absolute',top:'0',bottom:'0',width:'1px',
+     background:'rgba(124,58,237,.16)',left:(6+i*11)+'%',willChange:'opacity,transform'});
+   gl.push(d);
+ }
+ const hz=[];
+ for(let i=0;i<2;i++){
+   const d=E('div','',grid);
+   px(d,{position:'absolute',left:'0',right:'0',height:'1px',
+     background:'rgba(124,58,237,.16)',top:(38+i*24)+'%',willChange:'opacity,transform'});
+   hz.push(d);
+ }
+ const word=E('div','',st);
+ /* Tracking is a flex gap, not letter-spacing: letter-spacing also trails the
+    final letter, which pulls a centred line off-centre and makes its real
+    extent hard to predict. A gap is symmetric and exactly computable, so the
+    word can be opened as far as the frame allows and no further. */
+ px(word,{position:'absolute',left:'0',right:'0',top:'50%',
+   display:'flex',justifyContent:'center',alignItems:'center',
+   fontSize:'clamp(30px,5.6vw,92px)',fontWeight:'500',color:'#3b2378',
+   willChange:'transform,opacity'});
+ const chars=[...'PRIVATE'].map(c=>{
+   const sp=E('span','',word,c); sp.style.display='inline-block'; return sp;});
+ /* How far the word can open depends on the frame: tracking adds one gap per
+    letter, so measure the untracked width and solve for the widest gap that
+    still fits. Without this the word runs off the edge on many widths. */
+ let m={k:-1,w0:0,fs:16};
+ const gauge=()=>{                       // flex gap never affects item widths
+   if(m.k===VW()) return m;
+   let w0=0; for(const c of chars) w0+=c.getBoundingClientRect().width;
+   if(w0>0) m={k:VW(), w0, fs:parseFloat(getComputedStyle(word).fontSize)||16};
+   return m;
+ };
+ s.draw=p=>{
+   const u=eio(P(p,.10,.62)), o=eo3(P(p,.04,.20))*(1-eo3(P(p,.985,.05)));
+   const g=gauge(), grow=lerp(.94,1.04,u);
+   const room=Math.max(0,(VW()*.88/grow - g.w0)/Math.max(1,chars.length-1));
+   const gap=lerp(0,Math.min(room,g.fs*.50),u);
+   px(word,{opacity:o.toFixed(3),
+     transform:`translateY(-50%) scale(${grow.toFixed(3)})`,
+     gap:gap.toFixed(2)+'px'});
+   chars.forEach((c,i)=>{c.style.opacity=eo3(P(p,.06+i*.028,.22)).toFixed(3);});
+   gl.forEach((d,i)=>{d.style.opacity=(eo3(P(p,.14+i*.02,.24))*(1-eo3(P(p,.985,.05)))*.9).toFixed(3);
+     d.style.transform=`scaleY(${eio(P(p,.14+i*.02,.34)).toFixed(3)})`;});
+   hz.forEach((d,i)=>{d.style.opacity=(eo3(P(p,.30+i*.06,.24))*(1-eo3(P(p,.985,.05)))*.9).toFixed(3);
+     d.style.transform=`scaleX(${eio(P(p,.30+i*.06,.40)).toFixed(3)})`;});
+ };
+}
+
+/* ═══ S6 · the mark resolves ════════════════════════════════════════ */
+{
+ const s=sec(215), st=s.stage;
+ const bg=E('div','layer',st);
+ px(bg,{background:'linear-gradient(165deg,#f9f6fe 0%,#efe6fb 40%,#fae1d2 100%)'});
+ const glow=E('div','blob',st);
+ px(glow,{background:'#c9b8f0',left:'30%',top:'22%',width:'40vw',height:'40vw',opacity:'.6'});
+ const row=E('div','',st);
+ px(row,{position:'absolute',left:'0',right:'0',top:'50%',display:'flex',
+   alignItems:'center',justifyContent:'center',gap:'2.0vw',
+   transform:'translateY(-50%)',willChange:'transform'});
+ const logo=E('img','',row); logo.src=IMG('mark');
+ px(logo,{willChange:'transform,opacity',flex:'none',
+   filter:'saturate(1.9) brightness(.52) contrast(1.15)'});
+ const wmk=E('div','',row);
+ px(wmk,{fontSize:'clamp(34px,6.4vw,106px)',fontWeight:'700',letterSpacing:'-.045em',
+   color:'#2f1b63',whiteSpace:'nowrap',overflow:'hidden',willChange:'width,opacity'});
+ const wtxt='DigitalOman.ai';
+ const wchars=[...wtxt].map((c,i)=>{
+   const sp=E('span','',wmk,c==='.'?'.':c);
+   sp.style.display='inline-block';
+   if(i>=wtxt.indexOf('.')) sp.style.color='#7c3aed';
+   return sp;});
+ REMEASURE.push(()=>{ wmk.style.width='auto';
+   wmk.dataset.nw=String(Math.ceil(wmk.getBoundingClientRect().width)+2); });
+ const tag=E('div','kick',st,'An AI that never leaves your machine');
+ px(tag,{position:'absolute',left:'0',right:'0',top:'63%',textAlign:'center',willChange:'opacity'});
+ s.draw=p=>{
+   const col=eio(P(p,.05,.36));                    // the mark collapses in
+   const sz=lerp(Math.min(VW(),VH())*.62,Math.min(VW(),VH())*.115,col);
+   px(logo,{width:sz+'px',height:sz+'px',opacity:eo3(P(p,.02,.14)).toFixed(3),
+     transform:`rotate(${lerp(-24,0,col).toFixed(2)}deg)`});
+   wchars.forEach((c,i)=>{
+     const u=eo5(P(p,.40+i*.022,.16));
+     px(c,{opacity:u.toFixed(3),
+       transform:`translateY(${((1-u)*16).toFixed(1)}px)`,
+       filter:u>.98?'none':`blur(${((1-u)*5).toFixed(2)}px)`});
+   });
+   px(wmk,{width:(eio(P(p,.38,.42))*(+wmk.dataset.nw||0))+'px'});
+   tag.style.opacity=(eo3(P(p,.72,.18))*(1-eo3(P(p,.99,.04)))).toFixed(3);
+   px(row,{transform:`translateY(-50%) translateY(${(-eo3(P(p,.90,.10))*90).toFixed(1)}px)`,
+     opacity:(1-eo3(P(p,.99,.04))).toFixed(3)});
+   glow.style.opacity=(arc(p,0,1)*.6+.15).toFixed(3);
+ };
+}
+
+/* ═══ S7 · pull back — it is running on a real desk ═════════════════ */
+{
+ const s=sec(230), st=s.stage;
+ const plate=E('div','plate',st);
+ px(plate,{backgroundImage:`url(${IMG('desk','webp')})`,willChange:'transform,opacity'});
+ const wash=E('div','layer',st);
+ px(wash,{background:'linear-gradient(180deg,rgba(253,252,255,.55),rgba(253,252,255,.15))',
+   willChange:'opacity'});
+ const mon=E('div','',st);                        /* a CSS monitor, so the fit is exact */
+ px(mon,{position:'absolute',left:'0',top:'0',willChange:'transform,opacity'});
+ const bez=E('div','',mon);
+ px(bez,{position:'relative',borderRadius:'14px',background:'#15131c',padding:'1.1%',
+   boxShadow:'0 40px 90px rgba(60,35,110,.34)'});
+ const scr=E('div','',bez);
+ px(scr,{position:'relative',borderRadius:'8px',overflow:'hidden',background:'#fff'});
+ const shot=E('img','',scr); shot.src=LIT('home');
+ px(shot,{width:'100%',height:'100%',objectFit:'cover',objectPosition:'top left'});
+ const neck=E('div','',mon);
+ px(neck,{margin:'0 auto',background:'#c9c4d4',willChange:'opacity'});
+ const foot=E('div','',mon);
+ px(foot,{margin:'0 auto',background:'#c9c4d4',borderRadius:'0 0 8px 8px',willChange:'opacity'});
+ const capGlow=E('div','',st);
+ px(capGlow,{position:'absolute',left:'0',right:'0',top:'62%',height:'34%',
+   background:'radial-gradient(ellipse 52% 62% at 50% 50%,rgba(253,252,255,.94),rgba(253,252,255,0) 72%)',
+   willChange:'opacity',pointerEvents:'none'});
+ const capBox=E('div','',st);
+ px(capBox,{position:'absolute',left:'0',right:'0',top:'80%',height:'0'});
+ const cap=line(capBox,'It runs *here*. On your own hardware.','t-hero');
+ s.draw=p=>{
+   const back=eio(P(p,.04,.58));                   // full-bleed screen -> desk object
+   const w=VW(), h=VH();
+   const mw=lerp(w*1.30,w*(NARROW()?.80:.40),back), mh=mw*.6267;
+   px(mon,{left:((w-mw)/2)+'px',top:((h-mh)/2-h*lerp(.02,.09,back))+'px',width:mw+'px'});
+   px(scr,{width:'100%',height:(mh)+'px'});
+   px(neck,{width:(mw*.07)+'px',height:(mh*.13*back)+'px',opacity:back.toFixed(3)});
+   px(foot,{width:(mw*.24)+'px',height:(mh*.022*back)+'px',opacity:back.toFixed(3)});
+   px(plate,{opacity:eo3(P(p,.10,.42)).toFixed(3),
+     transform:`scale(${lerp(1.30,1.02,back).toFixed(3)})`});
+   wash.style.opacity=(1-back*.72).toFixed(3);
+   capGlow.style.opacity=eo3(P(p,.42,.12)).toFixed(3);
+   /* starts early and holds: the dissolve is what takes it away, so the
+      line is fully readable for most of the beat */
+   show(cap,p,.46,.035,.17);
+ };
+}
+
+/* ═══ S8 · into the app — a real question, a real local answer ══════ */
+const PROMPT='In two short sentences, why does running an AI model locally protect my business data?';
+const ANSWER="Running an AI model locally on your business's devices or servers protects your data by isolating it from the internet, reducing the risk of unauthorized access or data breaches. This approach also enables you to control access, monitor, and update your model in a secure and controlled environment.";
+{
+ const s=sec(300), st=s.stage;
+ const bg=E('div','layer',st);
+ px(bg,{background:'linear-gradient(170deg,#f6f2fd 0%,#ece2f9 52%,#fae3d5 100%)'});
+ const app=E('div','app',st);
+ const rail=E('div','rail',app);
+ E('div','brand',rail,'<i></i><span>DigitalOman<span style="color:var(--cy)">.ai</span></span>');
+ E('div','nb',rail,'+ New chat');
+ E('div','grp',rail,'RECENT');
+ ['Oman logistics 2026','Q3 summary','hey'].forEach(x=>E('div','it',rail,x));
+ E('div','grp',rail,'TOOLS');
+ ['AI Academy','Search Engine','Mail','ERP','Notes','To Do','Transcribe'].forEach(x=>E('div','it',rail,x));
+ const body=E('div','body',app);
+ E('div','top',body,'New chat');
+ const qb=E('div','q',body,''); px(qb,{willChange:'opacity,transform'});
+ const at=E('div','atag',body,'✦ on-device · Llama 3.2 1B'); px(at,{willChange:'opacity'});
+ const ab=E('div','a',body,'');
+ const comp=E('div','composer',body,'');
+ const ctxt=E('span','',comp,''); const send=E('div','send',comp,'');
+ s.draw=p=>{
+   const w=VW(), h=VH();
+   const narrow = w<780;
+   const DW = narrow?520:1240, DH = narrow?700:764;
+   rail.style.display = narrow?'none':'';
+   const k=Math.min(w*(narrow?.94:.88)/DW, h*.86/DH);
+   const zin=eio(P(p,0,.12));
+   px(app,{width:DW+'px',height:DH+'px',
+     left:((w-DW)/2)+'px',top:((h-DH)/2)+'px',
+     transform:`scale(${(k*lerp(.46,1,zin)).toFixed(4)})`,
+     opacity:eo3(P(p,0,.10)).toFixed(3)});
+   const sent=p>=.34;
+   const tn=Math.floor(P(p,.10,.20)*PROMPT.length);
+   ctxt.innerHTML=sent?'<span style="color:#a49ebb">Type your message…</span>'
+     :(PROMPT.slice(0,tn)||'<span style="color:#a49ebb">Type your message…</span>')
+       +(tn>0&&tn<PROMPT.length?'<span class="cur"></span>':'');
+   qb.textContent=PROMPT;
+   px(qb,{opacity:sent?eo3(P(p,.34,.05)).toFixed(3):'0',
+     transform:`translateY(${((1-eo5(P(p,.34,.10)))*14).toFixed(1)}px)`});
+   at.style.opacity=eo3(P(p,.40,.05)).toFixed(3);
+   const an=Math.floor(P(p,.42,.44)*ANSWER.length);
+   ab.innerHTML=ANSWER.slice(0,an)+(an>0&&an<ANSWER.length?'<span class="cur"></span>':'');
+   send.style.opacity=(tn>0&&!sent)?'1':'.35';
+ };
+}
+
+/* ═══ S9 · everything else it does ═════════════════════════════════ */
+{
+ const s=sec(245), st=s.stage;
+ const bg=E('div','layer',st);
+ px(bg,{background:'linear-gradient(150deg,#efe7fb 0%,#e6daf8 44%,#f8e0cf 100%)'});
+ const hd=line(st,'And it does *everything* else.','t-hero');
+ px(hd.host,{top:'16%'});
+ const win=E('div','win',st);
+ const wimg=E('img','',win); wimg.src=LIT('erp');
+ const SHOTS=[['erp','ERP · live dashboards'],['academy','AI Academy'],
+              ['search','Web search'],['chat','On-device chat']];
+ const R=rng(47);
+ const orbit=[];
+ SHOTS.forEach((sh,i)=>{
+   const d=E('div','chipf',st,sh[1]);
+   orbit.push({d,a0:i/SHOTS.length*Math.PI*2+.6,r:.50+R()*.10,sp:.7,dl:i*.05});
+ });
+ const FMT=['PDF','DOCX','XLSX','PPTX','+70 formats'];
+ FMT.forEach((f,i)=>{
+   const d=E('div','chipf',st,f);
+   if(i===FMT.length-1) px(d,{background:'#7c3aed',color:'#fff',border:'none'});
+   orbit.push({d,a0:.5+i/FMT.length*Math.PI*2,r:.60+R()*.08,sp:-.55,dl:.25+i*.045});
+ });
+ s.draw=p=>{
+   show(hd,p,.04,.045,.18,{out:.985,outDur:.05});
+   const w=VW(),h=VH(), base=Math.min(w,h*1.6);
+   const nb=NARROW(), ww=Math.min(w*(nb?.86:.46),860), wh=ww*.6267;
+   const u=eo5(P(p,.10,.34));
+   // the framed screen swaps as you scroll, like flipping through the toolset
+   const idx=Math.min(SHOTS.length-1,Math.floor(P(p,.16,.74)*SHOTS.length));
+   if(wimg.dataset.i!==String(idx)){wimg.dataset.i=String(idx);wimg.src=LIT(SHOTS[idx][0]);}
+   px(win,{left:((w-ww)/2)+'px',top:((h-wh)/2+h*.05)+'px',width:ww+'px',height:wh+'px',
+     opacity:(eo3(P(p,.10,.20))*(1-eo3(P(p,.985,.05)))).toFixed(3),
+     transform:`translateY(${((1-u)*70).toFixed(1)}px) scale(${lerp(.9,1,u).toFixed(3)})`});
+   orbit.forEach((c,i)=>{
+     const iu=eob(P(p,.14+c.dl,.34)), o=eo3(P(p,.14+c.dl,.26))*(1-eo3(P(p,.985,.05)));
+     const ang=c.a0+p*c.sp*1.35, rr=c.r*base*lerp(1.35,1,iu)*(nb?.78:1);
+     px(c.d,{left:'0',top:'0',opacity:o.toFixed(3),
+       transform:`translate(${(w/2+Math.cos(ang)*rr*(nb?1.06:1.02)).toFixed(1)}px,${(h/2+Math.sin(ang)*rr*(nb?.80:.66)).toFixed(1)}px) translate(-50%,-50%) scale(${lerp(.7,1,iu).toFixed(3)})`});
+   });
+ };
+}
+
+/* ═══ S10 · three promises ═════════════════════════════════════════ */
+{
+ const s=sec(215), st=s.stage;
+ E('div','paperbg',st); const fog=E('div','fog',st);
+ const PH=[['Install it once.',.05],['Own it forever.',.36],['Keep it *private*.',.67]];
+ const lines=PH.map(ph=>{const l=line(st,ph[0],'t-big'); return {l,at:ph[1]};});
+ s.draw=p=>{
+   lines.forEach((o,i)=>{
+     /* hold each phrase well past its last word; the final one rides the
+        dissolve out rather than fading on its own */
+     show(o.l,p,o.at,.04,.13,i<2?{out:o.at+.24,outDur:.07,dy:18}:{dy:18});
+   });
+   px(fog,{opacity:(.6+arc(p,0,1)*.4).toFixed(3),
+     transform:`translateY(${lerp(14,-10,p).toFixed(1)}vh) scale(${lerp(1,1.16,p).toFixed(3)})`});
+ };
+}
+
+/* ═══ S11 · close ══════════════════════════════════════════════════ */
+{
+ const s=sec(330), st=s.stage;
+ const plate=E('div','plate',st);
+ px(plate,{backgroundImage:`url(${IMG('clouds','webp')})`,willChange:'transform,opacity'});
+ const wash=E('div','layer',st);
+ px(wash,{background:'linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.62))',
+   willChange:'opacity'});
+ const stack=E('div','stack',st);
+ const row=E('div','lock',stack);
+ const lg=E('img','',row); lg.src=IMG('mark');
+ E('div','wm',row,'DigitalOman<span class="pur">.ai</span>');
+ const tag=E('div','',stack,'Your AI. Your machine. Your data.');
+ px(tag,{fontSize:'clamp(16px,2.4vw,40px)',fontWeight:'500',color:'#4a3585',
+   willChange:'opacity,transform'});
+ const btn=E('a','btn',stack,'Contact Us');
+ btn.href='mailto:contact@digitaloman.ai';
+ const cloud=E('a','blink',stack,
+   'Get Oman Hosted Cloud AI'
+   +'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+   +' stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'
+   +'<path d="M5 12h13M12 5.5 18.5 12 12 18.5"/></svg>');
+ cloud.href='https://cloud.digitaloman.ai';
+ cloud.target='_blank'; cloud.rel='noopener';
+ s.draw=p=>{
+   px(plate,{opacity:eo3(P(p,0,.22)).toFixed(3),
+     transform:`scale(${lerp(1.16,1.02,eio(P(p,0,.9))).toFixed(3)})`});
+   wash.style.opacity=lerp(.25,1,eo3(P(p,.10,.5))).toFixed(3);
+   /* every item rises on the same axis, staggered — the stack keeps them
+      vertically centred together at any height */
+   const item=(el,at,dist)=>{
+     const u=eo5(P(p,at,.30));
+     px(el,{opacity:eo3(P(p,at,.20)).toFixed(3),
+       transform:`translateY(${((1-u)*(dist||20)).toFixed(1)}px)`});
+   };
+   const u=eob(P(p,.20,.34));
+   px(row,{opacity:eo3(P(p,.20,.20)).toFixed(3),
+     transform:`scale(${lerp(.88,1,u).toFixed(3)})`});
+   item(tag,.40,22); item(btn,.56,20); item(cloud,.68,16);
+ };
+}
+
+/* ═══ driver ═══════════════════════════════════════════════════════ */
+const prog=document.getElementById('prog');
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let target=0, cur=0, ready=false;
+
+/* One continuous timeline: T = section index + that section's progress.
+   Stages are fixed and cross-dissolve across the seam, so a section hands
+   over to the next the way a cut does — nothing slides out of frame. */
+function globalT(y){
+  const last=SEC.length-1;
+  for(let i=0;i<SEC.length;i++){
+    const s=SEC[i], top=s.el.offsetTop;
+    /* the final section is the only one with nothing after it, so its last
+       viewport-worth of height is unreachable — measure it against what can
+       actually be scrolled, or it never reaches p = 1 */
+    const h=Math.max(1, i===last ? s.el.offsetHeight-VH() : s.el.offsetHeight);
+    if(y<top) return i;
+    if(y<top+h) return i+(y-top)/h;
+  }
+  return SEC.length-1e-4;
+}
+function draw(){
+  const y=cur, vh=VH(), T=globalT(y), last=SEC.length-1;
+  for(let i=0;i<SEC.length;i++){
+    const s=SEC[i];
+    const inn = i===0 ? 1 : P(T,i-.055,.075);
+    const out = i===last ? 0 : P(T,i+.985,.070);
+    const vis = Math.min(inn,1-out);
+    if(vis<=.003){ s.stage.style.display='none'; continue; }
+    s.stage.style.display='';
+    s.stage.style.opacity=vis.toFixed(3);
+    s.draw(clamp(T-i));
+  }
+  const max=Math.max(1,document.documentElement.scrollHeight-vh);
+  prog.style.width=(clamp(y/max)*100).toFixed(2)+'%';
+}
+function tick(){
+  if(ready){
+    cur += (target-cur)*(REDUCED?1:.16);
+    if(Math.abs(target-cur)<.35) cur=target;
+    draw();
+  }
+  requestAnimationFrame(tick);
+}
+let layoutW=0, layoutH=0;
+function relayout(){ measureAll(); cur=target=window.scrollY; draw(); }
+
+addEventListener('scroll',()=>{ target=window.scrollY; },{passive:true});
+let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{
+  const w=VW(), h=VH();
+  if(w!==layoutW || Math.abs(h-layoutH)>layoutH*.35) relayout();
+  else { layoutH=h; draw(); }                     // address-bar churn: just redraw
+},140); });
+addEventListener('orientationchange',()=>{ clearTimeout(rt); rt=setTimeout(relayout,220); });
+
+(async () => {
+  const urls=new Set();
+  document.querySelectorAll('img').forEach(i=>urls.add(i.getAttribute('src')));
+  urls.add(IMG('mark'));
+  for(const n of ['desk','clouds']) urls.add(IMG(n,'webp'));
+  for(const n of ['home','search','erp','notes','academy','todo','transcribe','chat']) urls.add(LIT(n));
+  await Promise.all([...urls].map(u=>new Promise(r=>{
+    const i=new Image(); i.onload=i.onerror=r; i.src=u;
+  })));
+  try{ await document.fonts.ready; }catch(e){}
+  ready=true; relayout();
+  document.body.dataset.ready='1';
+})();
+tick();
+</script>
